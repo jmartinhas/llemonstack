@@ -57,9 +57,13 @@ export async function loadServices(
         yamlFilePath,
       )
       if (!yamlResult.success || !yamlResult.data) {
-        result.addMessage('error', `Error reading service config file: ${serviceDir.name}`, {
-          error: yamlResult.error,
-        })
+        result.addMessage(
+          'error',
+          `Error reading service config file: ${serviceDir.name}: ${yamlResult.toString()}`,
+          {
+            error: yamlResult.error,
+          },
+        )
         continue
       }
 
