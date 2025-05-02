@@ -14,9 +14,14 @@ Reuses existing MinIO, Redis, and Postgres (Supabase) services.
 
 ## TODO
 
-- [ ] Create ElasticSearch service
-- [ ] Finish configuring docker-compose.yaml, .env. and conf files
 - [ ] Build ragflow from scratch to support macos
   - See https://ragflow.io/docs/dev/build_docker_image
-- [ ] Create custom service.ts
-  - [ ] Override loadEnv: set MACOS=1 if running on mac
+  - [ ] Change xgboost version in pyproject.toml to 1.6.0
+  - [ ] Download deps: `uv run download_deps.py`
+  - [ ] Build Dockerfile.deps: `docker build -f Dockerfile.deps -t infiniflow/ragflow_deps .`
+  - [ ] Build main Dockerfile
+
+`download_deps.py` downloads tiktoken, huggingface models, etc.
+Probably better to replace with a script inside of service.ts that parses the URLs from
+the download_deps.py file and then downloads to a self contained dir instead of root of
+ragflow repo? Repo pull will fail since untracked files are present after the download.

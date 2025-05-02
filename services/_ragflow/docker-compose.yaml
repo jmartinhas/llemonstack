@@ -10,187 +10,77 @@ networks:
     name: ${LLEMONSTACK_NETWORK_NAME}
     external: true
 
-volumes:
-  infinity_data:
-    driver: local
-
 # Add this to the ragflow service to allow access to ollama?
 # extra_hosts:
 #       - "host.docker.internal:host-gateway"
 
 services:
-  api:
-    image: ragflow/ragflow:latest
-    container_name: ragflow_api
-    command: python /app/api/ragflow_server.py
+  # Custom build RAGFlow for macos
+  ragflow:
+    # profile:
+    #   - ragflow-macos # TODO: add additional profile to use image instead of building
+    build:
+      context: ${LLEMONSTACK_REPOS_PATH:-.}/ragflow
+      dockerfile: Dockerfile
+    container_name: ragflow
     ports:
-      - "8000:8000" # Expose RAGFlow API port
-    environment:
-      - RAGFLOW_DATABASE_TYPE=postgres
-      - RAGFLOW_POSTGRES_HOST=postgres
-      - RAGFLOW_POSTGRES_PORT=5432
-      - RAGFLOW_POSTGRES_USER=ragflow
-      - RAGFLOW_POSTGRES_PASSWORD=ragflow_password # CHANGE THIS!
-      - RAGFLOW_POSTGRES_DB=ragflow
-      - RAGFLOW_MINIO_ADDR=minio:9000
-      - RAGFLOW_MINIO_ACCESS_KEY=minioadmin
-      - RAGFLOW_MINIO_SECRET_KEY=minioadmin # CHANGE THIS!
-      - RAGFLOW_MINIO_SECURE=False # Set to True if using HTTPS for MinIO
-      - RAGFLOW_REDIS_ADDR=redis:6379
-      - RAGFLOW_REDIS_PASSWORD= # Set if Redis requires a password
-      - RAGFLOW_SERVICE_CONF=/app/conf/service_conf.yaml # Default path inside container
-      # Add other necessary API environment variables if needed
-    depends_on:
-      postgres:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-      redis:
-        condition: service_started # Redis doesn't have a built-in healthcheck in this setup
+      - ${RAGFLOW_HOST_API_PORT:-9380}:9380
+      - ${RAGFLOW_HOST_PORT:-9390}:80
+      - ${RAGFLOW_HOST_SSL_PORT:-9391}:443
+      - ${RAGFLOW_HOST_MCP_PORT:-9382}:9382
+      # Extra ports in docker-compose.yaml, not sure what they're for?
+      # - 5678:5678
+      # - 5679:5679
     volumes:
-      - ./conf/service_conf.yaml:/app/conf/service_conf.yaml # Optional: Mount local config if needed
-
-  web:
-    image: ragflow/ragflow-web:latest # Assuming separate web image, adjust if needed
-    container_name: ragflow_web
-    ports:
-      - "80:80" # Expose RAGFlow Web UI port
-    depends_on:
-      - api
-
-  task:
-    image: ragflow/ragflow:latest
-    container_name: ragflow_task
-    command: python /app/rag/app.py # Adjust command if needed
+      - ${LLEMONSTACK_VOLUMES_PATH:-./volumes}/ragflow/logs:/ragflow/logs
+      - ${LLEMONSTACK_REPOS_PATH:-.}/ragflow/docker/nginx/ragflow.conf:/etc/nginx/conf.d/ragflow.conf
+      - ${LLEMONSTACK_REPOS_PATH:-.}/ragflow/docker/nginx/proxy.conf:/etc/nginx/proxy.conf
+      - ${LLEMONSTACK_REPOS_PATH:-.}/ragflow/docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./service_conf.template.yaml:/ragflow/conf/service_conf.yaml.template
+    env_file: .env
     environment:
-      - RAGFLOW_DATABASE_TYPE=postgres
-      - RAGFLOW_POSTGRES_HOST=postgres
-      - RAGFLOW_POSTGRES_PORT=5432
-      - RAGFLOW_POSTGRES_USER=ragflow
-      - RAGFLOW_POSTGRES_PASSWORD=ragflow_password # CHANGE THIS!
-      - RAGFLOW_POSTGRES_DB=ragflow
-      - RAGFLOW_MINIO_ADDR=minio:9000
-      - RAGFLOW_MINIO_ACCESS_KEY=minioadmin
-      - RAGFLOW_MINIO_SECRET_KEY=minioadmin # CHANGE THIS!
-      - RAGFLOW_MINIO_SECURE=False
-      - RAGFLOW_REDIS_ADDR=redis:6379
-      - RAGFLOW_REDIS_PASSWORD=
-      - RAGFLOW_SERVICE_CONF=/app/conf/service_conf.yaml
-      # Add other necessary Task environment variables if needed
-    volumes:
-      - ./conf/service_conf.yaml:/app/conf/service_conf.yaml # Optional: Mount local config
+      - TZ=${TIMEZONE}
+      - HF_ENDPOINT=${HF_ENDPOINT}
+      - MACOS=${MACOS:-0}
+      - LIGHTEN=${RAGFLOW_IMAGE_LIGHTEN:-1}
+    restart: on-failure
 
-  worker:
-    image: ragflow/ragflow:latest
-    container_name: ragflow_worker
-    command: python /app/worker/app.py # Adjust command if needed
-    environment:
-      - RAGFLOW_DATABASE_TYPE=postgres
-      - RAGFLOW_POSTGRES_HOST=postgres
-      - RAGFLOW_POSTGRES_PORT=5432
-      - RAGFLOW_POSTGRES_USER=ragflow
-      - RAGFLOW_POSTGRES_PASSWORD=ragflow_password # CHANGE THIS!
-      - RAGFLOW_POSTGRES_DB=ragflow
-      - RAGFLOW_MINIO_ADDR=minio:9000
-      - RAGFLOW_MINIO_ACCESS_KEY=minioadmin
-      - RAGFLOW_MINIO_SECRET_KEY=minioadmin # CHANGE THIS!
-      - RAGFLOW_MINIO_SECURE=False
-      - RAGFLOW_REDIS_ADDR=redis:6379
-      - RAGFLOW_REDIS_PASSWORD=
-      - RAGFLOW_SERVICE_CONF=/app/conf/service_conf.yaml
-      # Add other necessary Worker environment variables if needed
-    volumes:
-      - ./conf/service_conf.yaml:/app/conf/service_conf.yaml # Optional: Mount local config
+    # https://docs.docker.com/engine/daemon/prometheus/#create-a-prometheus-configuration
+    # If you're using Docker Desktop, the --add-host flag is optional. This flag makes sure that the host's internal IP gets exposed to the Prometheus container.
 
+    # Allow ragflow to access host for ollama
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
 
-  # es01:
-  #   container_name: ragflow-es-01
-  #   profiles:
-  #     - elasticsearch
-  #   image: elasticsearch:${STACK_VERSION}
+    # Start ragflow with MCP server enabled
+    # TODO: move to ragflow-mcp service
+    # command:
+    #   - --enable-mcpserver
+    #   - --mcp-host=0.0.0.0
+    #   - --mcp-port=9382
+    #   - --mcp-base-url=http://127.0.0.1:9380
+    #   - --mcp-script-path=/ragflow/mcp/server/server.py
+    #   - --mcp-mode=self-host
+    #   - --mcp-host-api-key=${RAGFLOW_MCP_API_KEY:-}
+
+  # executor:
+  #   build:
+  #     context: ${LLEMONSTACK_REPOS_PATH:-.}/ragflow
+  #     dockerfile: Dockerfile
+  #   container_name: ragflow-executor
   #   volumes:
-  #     - esdata01:/usr/share/elasticsearch/data
-  #   ports:
-  #     - ${ES_PORT}:9200
+  #     - ./ragflow-logs:/ragflow/logs
+  #     - ./nginx/ragflow.conf:/etc/nginx/conf.d/ragflow.conf
   #   env_file: .env
   #   environment:
-  #     - node.name=es01
-  #     - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-  #     - bootstrap.memory_lock=false
-  #     - discovery.type=single-node
-  #     - xpack.security.enabled=true
-  #     - xpack.security.http.ssl.enabled=false
-  #     - xpack.security.transport.ssl.enabled=false
-  #     - cluster.routing.allocation.disk.watermark.low=5gb
-  #     - cluster.routing.allocation.disk.watermark.high=3gb
-  #     - cluster.routing.allocation.disk.watermark.flood_stage=2gb
   #     - TZ=${TIMEZONE}
-  #   mem_limit: ${MEM_LIMIT}
-  #   ulimits:
-  #     memlock:
-  #       soft: -1
-  #       hard: -1
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "curl http://localhost:9200"]
-  #     interval: 10s
-  #     timeout: 10s
-  #     retries: 120
+  #     - HF_ENDPOINT=${HF_ENDPOINT}
+  #     - MACOS=${MACOS}
+  #   entrypoint: "/ragflow/entrypoint_task_executor.sh 1 3"
   #   networks:
   #     - ragflow
   #   restart: on-failure
-
-  # postgres:
-  #   image: postgres:15
-  #   container_name: ragflow_postgres
-  #   environment:
-  #     POSTGRES_USER: ragflow
-  #     POSTGRES_PASSWORD: ragflow_password # CHANGE THIS! Must match RAGFLOW_POSTGRES_PASSWORD
-  #     POSTGRES_DB: ragflow
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   # Optional: Expose port for debugging, not needed for inter-service communication
-  #   # ports:
-  #   #   - "5432:5432"
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U ragflow -d ragflow"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #   networks:
-  #     - ragflow_network
-
-  # minio:
-  #   image: minio/minio:latest
-  #   container_name: ragflow_minio
-  #   command: server /data --console-address ":9001"
-  #   ports:
-  #     - "9000:9000" # MinIO API port
-  #     - "9001:9001" # MinIO Console port
-  #   environment:
-  #     MINIO_ROOT_USER: minioadmin # Corresponds to RAGFLOW_MINIO_ACCESS_KEY
-  #     MINIO_ROOT_PASSWORD: minioadmin # CHANGE THIS! Corresponds to RAGFLOW_MINIO_SECRET_KEY
-  #   volumes:
-  #     - minio_data:/data
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-  #     interval: 30s
-  #     timeout: 20s
-  #     retries: 3
-  #   networks:
-  #     - ragflow_network
-
-  # redis:
-  #   image: redis:7 # Use a specific version
-  #   container_name: ragflow_redis
-  #   # Optional: Add command for password if RAGFLOW_REDIS_PASSWORD is set
-  #   # command: redis-server --requirepass your_redis_password
-  #   ports:
-  #     - "6379:6379" # Optional: Expose port for debugging
-  #   volumes:
-  #     - redis_data:/data
-  #   networks:
-  #     - ragflow_network
-# volumes:
-#   postgres_data:
-#   minio_data:
-#   redis_data:
+  #   # https://docs.docker.com/engine/daemon/prometheus/#create-a-prometheus-configuration
+  #   # If you're using Docker Desktop, the --add-host flag is optional. This flag makes sure that the host's internal IP gets exposed to the Prometheus container.
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"

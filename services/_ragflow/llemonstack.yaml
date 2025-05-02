@@ -26,26 +26,27 @@ repo:
   sparse: false
   checkFile: Dockerfile # Make sure Dockerfile is present in the repo
 
-# volumes:
-#   - ragflow/data
+volumes:
+  - ragflow/logs
 
-# exposes:
-#   host:
-#     dashboard:
-#       name: LightRAG
-#       url: http://localhost:9621
-#   internal:
-#     lightrag:
-#       name: LightRAG
-#       url: http://lightrag:9621
-#       credentials:
-#         API Key: ${LIGHTRAG_API_KEY}
+exposes:
+  host:
+    dashboard:
+      name: RAGFlow
+      url: http://localhost:${RAGFLOW_HOST_PORT:-9390}
+    mcp:
+      name: RAGFlow MCP
+      url: http://localhost:9382
+  internal:
+    api:
+      name: RAGFlow API
+      url: http://ragflow:${RAGFLOW_HOST_API_PORT:-9380}
 
 init:
   postgres_schema: # Generate postgres schema and populate env vars
     user: RAGFLOW_POSTGRES_USER
     pass: RAGFLOW_POSTGRES_PASSWORD
-  # generate:
-  #   RAGFLOW_API_KEY:
-  #     method: generateSecretKey
-  #     length: 20
+  generate:
+    RAGFLOW_MCP_API_KEY:
+      method: generateSecretKey
+      length: 20
