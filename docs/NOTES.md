@@ -194,6 +194,8 @@ docker exec -it --user root n8n sh
 
 ## Resources
 
+- https://www.llm-prices.com/
+
 **Local LLM Providers**
 
 - Ollama
@@ -203,7 +205,25 @@ docker exec -it --user root n8n sh
 
 **Additional Services:**
 
-- https://github.com/getzep/graphiti
+- https://github.com/chroma-core/chroma
+
+- https://github.com/mendableai/open-lovable
+
+- https://github.com/pmarreck/yt-transcriber
+
+  - https://contentflow.megalabs.co/ - YouTube transcriber service
+
+- https://github.com/mozilla-ai/any-llm
+- https://github.com/BloopAI/vibe-kanban
+- https://github.com/frdel/agent-zero
+- https://github.com/airweave-ai/airweave
+- https://github.com/tldraw/tldraw
+- https://github.com/letta-ai/letta
+- https://github.com/stanford-mast/blast
+- https://github.com/Fosowl/agenticSeek
+- https://github.com/simstudioai/sim
+- https://github.com/onyx-dot-app/onyx
+- https://github.com/getzep/graphiti - replaces zep ce
 - https://github.com/khoj-ai/khoj
 - https://github.com/trycua/cua
 - https://github.com/rowboatlabs/rowboat - tool for building AI agents
@@ -230,6 +250,8 @@ docker exec -it --user root n8n sh
 - https://github.com/e2b-dev/fragments
   https://github.com/microsoft/OmniParser
 
+  - https://github.com/shutootaki/bookwith
+
 - https://github.com/automatisch/automatisch
 - https://github.com/airbytehq/airbyte
 - https://github.com/triggerdotdev/trigger.dev
@@ -239,6 +261,8 @@ docker exec -it --user root n8n sh
 - https://github.com/FlowiseAI/FlowiseChatEmbed
 
 - https://github.com/The-Pocket/PocketFlow
+
+- https://github.com/opensearch-project/OpenSearch - elastic search replacement with better vector search?
 
 - [open-health](https://github.com/OpenHealthForAll/open-health)
 
@@ -251,11 +275,33 @@ docker exec -it --user root n8n sh
 - https://github.com/hcengineering/platform - self hosted Notion + project management
 - https://github.com/colanode/colanode - self hosted Notion alternative with Slack-like chat features
 
+- https://github.com/dagger/dagger
+- https://github.com/kpenfound/agents - dagger agents examples
+
 Not AI, but potentially useful:
 
 - [Leaflet](https://github.com/hyperlink-academy/leaflet) - easily create and share text docs
 - https://github.com/jrz/container-shell/blob/main/shell
 - https://github.com/elysiajs/elysia - typescript framework for web servers, has OAuth plugin
+- https://github.com/omni-media/omniclip
+
+**TTS:**
+
+- https://github.com/resemble-ai/chatterbox
+- https://github.com/KoljaB/RealtimeVoiceChat
+- https://github.com/nari-labs/dia
+- https://github.com/KittenML/KittenTTS - SOTA 25mb
+
+**STT / Transcription:**
+
+- https://github.com/jianfch/stable-ts
+- https://github.com/kaixxx/noScribe
+- https://github.com/ggml-org/whisper.cpp
+
+**Misc of Interest**
+
+- https://github.com/bilalonur/awesome-llm-os
+- https://repoprompt.com/
 
 **File Converters**
 
@@ -289,8 +335,10 @@ Not AI, but potentially useful:
 
 **LLM Web Scrapers**
 
+- https://github.com/jina-ai/reader
 - https://github.com/mishushakov/llm-scraper
 - https://scrapecreators.com/
+- https://github.com/nottelabs/notte
 - see Notion doc for full list of scraper APIs
 
 **AI Tools Directories:**
@@ -305,6 +353,22 @@ Not AI, but potentially useful:
 - https://glama.ai/
 - https://smithery.ai/
 
+- https://github.com/czlonkowski/n8n-mcp
+
+- https://github.com/All-Hands-AI/OpenHands
+- https://github.com/synthetic-lab/octofriend
+
+  - https://news.ycombinator.com/item?id=44828568 - interesting, but buggy
+
+- https://github.com/mastanley13/GoHighLevel-MCP
+- https://github.com/basicmachines-co/open-ghl-mcp
+
+- https://desktopcommander.app/
+- https://github.com/wonderwhy-er/DesktopCommanderMCP
+
+- https://github.com/aperoc/toolkami
+- https://github.com/Klavis-AI/klavis
+- https://github.com/mcp-use/mcp-use
 - https://github.com/mendableai/firecrawl-mcp-server
 - https://browsermcp.io/ - automate the browser
 - https://github.com/OpenAdaptAI/OmniMCP
@@ -316,10 +380,15 @@ Not AI, but potentially useful:
   - https://agentkit.inngest.com/llms-full.txt
 - https://llmstxt.org/
 
+- https://github.com/frdel/agent-zero
+
   - https://developers.cloudflare.com/agents/llms-full.txt example from cloudflare
 
 - https://github.com/denolib/awesome-deno
+
   - https://github.com/littledivy/autopilot-deno
+
+- https://github.com/neiltron/apple-health-mcp
 
 **Prompts:**
 
